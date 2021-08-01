@@ -5,7 +5,7 @@ TasController::TasController(uint8_t deviceType, uint8_t bodyR, uint8_t bodyG, u
     device.deviceType = deviceType;
 
     // Set the interface type
-    device.npadInterfaceType = NpadInterfaceType_Bluetooth;
+    device.npadInterfaceType = HidNpadInterfaceType_Bluetooth;
 
     // Colors
     device.singleColorBody = RGBA8_MAXALPHA(bodyR, bodyG, bodyB);
@@ -14,14 +14,14 @@ TasController::TasController(uint8_t deviceType, uint8_t bodyR, uint8_t bodyG, u
     device.colorRightGrip = device.singleColorBody;
 
     // Charge is max
-    state.batteryCharge = 4;
+    state.battery_level = 4;
 
-    // Set Buttons and Joysticks
+    // Set Buttons and analog_stick_
     state.buttons = 0;
-    state.joysticks[JOYSTICK_LEFT].dx = 0;
-    state.joysticks[JOYSTICK_LEFT].dy = 0;
-    state.joysticks[JOYSTICK_RIGHT].dx = 0;
-    state.joysticks[JOYSTICK_RIGHT].dy = 0;
+    state.analog_stick_l.x += 0x10;
+    if (state.analog_stick_l.x > JOYSTICK_MAX) state.analog_stick_l.x = JOYSTICK_MIN;
+    state.analog_stick_r.y -= 0x10;
+    if (state.analog_stick_r.y < JOYSTICK_MIN) state.analog_stick_r.y = JOYSTICK_MAX;
 }
 
 void TasController::attach()
@@ -57,7 +57,7 @@ void TasController::detach()
 void TasController::pressA()
 {
     emptyMsg();
-    state.buttons |= KEY_A;
+    state.buttons |= HidNpadButton_A;
     setInputNextFrame();
 }
 
@@ -65,16 +65,9 @@ void TasController::pressA()
 void TasController::pressLR()
 {
     emptyMsg();
-    state.buttons |= KEY_L;
-    state.buttons |= KEY_R;
+    state.buttons |= HidNpadButton_L;
+    state.buttons |= HidNpadButton_R;
     setInputNextFrame();
-}
-
-void TasController::waitForVsync()
-{
-    Result rc = eventWait(&vsync_event, UINT64_MAX);
-    if(R_FAILED(rc))
-        fatalThrow(rc);
 }
 
 void TasController::setInputNextFrame()
@@ -87,16 +80,16 @@ void TasController::setInputNextFrame()
 void TasController::runMsg(std::shared_ptr<struct controlMsg> msg)
 {
     state.buttons = msg->keys;
-    state.joysticks[JOYSTICK_LEFT].dx = msg->joy_l_x;
-    state.joysticks[JOYSTICK_LEFT].dy = msg->joy_l_y;
-    state.joysticks[JOYSTICK_RIGHT].dx = msg->joy_r_x;
-    state.joysticks[JOYSTICK_RIGHT].dy = msg->joy_r_y;
+    state.analog_stick_l.x = msg->joy_l_x;
+    state.analog_stick_l.y = msg->joy_l_y;
+    state.analog_stick_r.x = msg->joy_r_x;
+    state.analog_stick_r.y = msg->joy_r_y;
 }
 void TasController::emptyMsg()
 {
     state.buttons = 0;
-    state.joysticks[JOYSTICK_LEFT].dx = 0;
-    state.joysticks[JOYSTICK_LEFT].dy = 0;
-    state.joysticks[JOYSTICK_RIGHT].dx = 0;
-    state.joysticks[JOYSTICK_RIGHT].dy = 0;
+    state.analog_stick_l.x = 0;
+    state.analog_stick_l.y = 0;
+    state.analog_stick_r.x = 0;
+    state.analog_stick_r.y = 0;
 }
