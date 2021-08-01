@@ -1,15 +1,21 @@
-# nx-TAS
-> Rewrite of [TAS-nx](https://github.com/hamhub7/TAS-nx)
+# Clone-Nx-Remastered
+> A fork of [Hamhub7's Clone-nx](https://github.com/hamhub7/CLONE-nx) With the purpose of updating its state.
 
-nx-TAS is fundamentally different than its predecessor, TAS-nx, in that it uses a virtual controller to send inputs instead of changing the inputs of the currently used controller.
+Clone-nx copys the inputs of your (P1) controller.
 
 ## Support the Creators
 Join our [Discord server](http://discord.gg/qeamCcV)  
-Support me on [Patreon](https://www.patreon.com/aaronhh) or [PayPal](https://www.paypal.me/aaronhamhub)  
+Support hamhub7 on [Patreon](https://www.patreon.com/aaronhh) or [PayPal](https://www.paypal.me/aaronhamhub)  
 Make a pull request!  
 
 ## Features
-New features are already planned, such as changing the tye of controller (pro, joycons, sideways joycons, and possibly other controllers), multiple player TAS support, motion controls, some way to combat variable load times and rng (for most games), and color customizaition of the controllers.
+New features are already planned, such as:
+1. A Smash Bros Ultimate Version Of Clone-nx for the in-game mods if you dont have memory for the sysmoodule.
+2. Custom Mapping Support For Controller Combo's.
+3. Custom Colors
+4. GUI for previously mentioned mapping support.
+5. Tas-Support (To record Multiple Inputs into a automatically generated format that will be used for [tas-script] (https://github.com/hamhub7/tas-script) more on that eventually)
+6. Support for Libnx-Auto-Updater.
 
 ## Usage
 First of all, you need to have an [Atmosphere-injected Switch](https://switch.homebrew.guide/).
