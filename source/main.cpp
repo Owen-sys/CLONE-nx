@@ -129,10 +129,7 @@ int main(int argc, char* argv[])
     // Initialization code can go here.
     // Configure our supported input layout: all players with standard controller styles
     padConfigureInput(8, HidNpadStyleSet_NpadStandard);
-
-    // Initialize the gamepad for reading all controllers
-    PadState pad;
-    padInitializeAny(&pad);
+ 
     // Skyline handle
  
     auto msg = std::make_shared<controlMsg>();
