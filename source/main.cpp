@@ -5,61 +5,58 @@
 #include <vector>
 #include <string>
 #include <map>
-
+ 
 // Include the main libnx system header, for Switch development
 #include <switch.h>
-
+ 
 // Include headers from other parts of the program
 #include "controller.hpp"
-
+ 
 using namespace std;
-
-// Create VSync event
-Event vsync_event;
-
+ 
 // Initialize frame counter variable
 int frameCount = 0;
 std::vector<TasController*> controllers;
-
+ 
 extern "C"
 {
     // Sysmodules should not use applet*.
     u32 __nx_applet_type = AppletType_None;
-
+ 
     // Adjust size as needed.
     #define INNER_HEAP_SIZE 0x80000
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char   nx_inner_heap[INNER_HEAP_SIZE];
-
+ 
     void __libnx_init_time(void);
     void __libnx_initheap(void);
     void __appInit(void);
     void __appExit(void);
 }
-
+ 
 void __libnx_initheap(void)
 {
-	void*  addr = nx_inner_heap;
-	size_t size = nx_inner_heap_size;
-
-	// Newlib
-	extern char* fake_heap_start;
-	extern char* fake_heap_end;
-
-	fake_heap_start = (char*)addr;
-	fake_heap_end   = (char*)addr + size;
+    void*  addr = nx_inner_heap;
+    size_t size = nx_inner_heap_size;
+ 
+    // Newlib
+    extern char* fake_heap_start;
+    extern char* fake_heap_end;
+ 
+    fake_heap_start = (char*)addr;
+    fake_heap_end   = (char*)addr + size;
 }
-
+ 
 // Init/exit services, update as needed.
 void __attribute__((weak)) __appInit(void)
 {
     Result rc;
-
+ 
     // Initialize default services.
     rc = smInitialize();
     if (R_FAILED(rc))
         fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
-
+ 
     rc = setsysInitialize();
     if (R_SUCCEEDED(rc)) {
         SetSysFirmwareVersion fw;
@@ -68,30 +65,30 @@ void __attribute__((weak)) __appInit(void)
             hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
         setsysExit();
     }
-
+ 
     // HID
     rc = hidInitialize();
     if (R_FAILED(rc))
         fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
-
+ 
     rc = fsInitialize();
     if (R_FAILED(rc))
         fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
-
+ 
     fsdevMountSdmc();
-
+ 
     rc = hiddbgInitialize();
     if (R_FAILED(rc))
         fatalThrow(rc);
-
+ 
     // vsync
     rc = viInitialize(ViServiceType_System);
     if(R_FAILED(rc))
         fatalThrow(rc);
 }
-
+ 
 void __attribute__((weak)) userAppExit(void);
-
+ 
 void __attribute__((weak)) __appExit(void)
 {
     // Cleanup default services.
@@ -100,7 +97,7 @@ void __attribute__((weak)) __appExit(void)
     hidExit();
     smExit();
 }
-
+ 
 class file_exception : public std::exception
 {
     virtual const char* what() const throw()
@@ -108,30 +105,43 @@ class file_exception : public std::exception
         return "File unopenable";
     }
 } f_ex;
-
+ 
+void waitForVsync(Event *vsync_event) {
+    Result rc = eventWait(vsync_event, UINT64_MAX);
+    if(R_FAILED(rc))
+        fatalThrow(rc);
+}
+ 
 // Main program entrypoint
 int main(int argc, char* argv[])
 {
+    Event vsync_event;
     // Init other services
     ViDisplay disp;
     Result rc = viOpenDefaultDisplay(&disp);
     if(R_FAILED(rc))
         fatalThrow(rc);
-
+ 
     rc = viGetDisplayVsyncEvent(&disp, &vsync_event);
     if(R_FAILED(rc))
         fatalThrow(rc);
 
     // Initialization code can go here.
+    // Configure our supported input layout: all players with standard controller styles
+    padConfigureInput(8, HidNpadStyleSet_NpadStandard);
+
+    // Initialize the gamepad for reading all controllers
+    PadState pad;
+    padInitializeAny(&pad);
     // Skyline handle
-
+ 
     auto msg = std::make_shared<controlMsg>();
-
+ 
     // Attach Work Buffer
     rc = hiddbgAttachHdlsWorkBuffer();
     if (R_FAILED(rc))
         fatalThrow(rc);
-
+ 
     // Create new thread for running frames
     // Thread countThread;
     // rc = threadCreate(&countThread, frameIncrement, NULL, NULL, 0x4000, 49, 3);
@@ -140,52 +150,53 @@ int main(int argc, char* argv[])
     // rc = threadStart(&countThread);
     // if(R_FAILED(rc))
     //     fatalThrow(rc);
-
+ 
     // Your code / main loop goes here.
     while(true)
     {
-        hidScanInput();
+        padUpdate(&pad);
 
-        if(hidKeyboardDown(KBD_1))
-        {   
+        //Defining/Declaring kHeld
+        u64 kHeld = padGetButtons(&pad);
+        u64 kDown = padGetButtonsDown(&pad);
+ 
+        if((kHeld & HidNpadButton_ZL) && (kHeld & HidNpadButton_L) && (kHeld & HidNpadButton_Right) && (kDown & HidNpadButton_Y))
+        {  
             controllers.push_back(new TasController(HidDeviceType_FullKey3, 0, 0, 0, 0, 0, 0));
             controllers.back()->attach();
         }
-        
-        if(hidKeyboardDown(KBD_MINUS))
+       
+        if((kHeld & HidNpadButton_ZR) && (kHeld & HidNpadButton_R) && (kHeld & HidNpadButton_Up) && (kDown & HidNpadButton_X))
         {
-            !controllers.empty() && controllers.back()->attachFlag;
+            controllers.back()->detach();
             delete controllers.back();
             controllers.pop_back();
         }
 
         if(!controllers.empty() && controllers.back()->attachFlag)
         {
-            msg->keys = hidKeysHeld(CONTROLLER_P1_AUTO);
+            msg->keys = padGetButtons(&pad);
             msg->keys &= 65535;
-
-            JoystickPosition pos_left;
-            JoystickPosition pos_right;
-            hidJoystickRead(&pos_left, CONTROLLER_P1_AUTO, JOYSTICK_LEFT);
-            hidJoystickRead(&pos_right, CONTROLLER_P1_AUTO, JOYSTICK_RIGHT);
-            msg->joy_l_x = pos_left.dx;
-            msg->joy_l_y = pos_left.dy;
-            msg->joy_r_x = pos_right.dx;
-            msg->joy_r_y = pos_right.dy;
+ 
+            PadState state;
+            padUpdate(&state);
+            msg->joy_l_x = state.sticks[0].x;
+            msg->joy_l_y = state.sticks[0].y;
+            msg->joy_r_x = state.sticks[1].x;
+            msg->joy_r_y = state.sticks[1].y;
         for(long unsigned int i = 0; i < controllers.size(); i++)
-            {   
+            {  
                 controllers[i]->runMsg(msg);
-                controllers[i]->waitForVsync();
                 controllers[i]->setInputNextFrame();
             }
         }
-
-        svcSleepThread(6250000);
+ 
+        waitForVsync(&vsync_event);
     }
-
+ 
     rc = hiddbgReleaseHdlsWorkBuffer();
-
+ 
     hiddbgExit();
-	
+   
     return 0;
 }
