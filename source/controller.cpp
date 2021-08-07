@@ -54,14 +54,6 @@ void TasController::detach()
 }
 
 //This also resets the state of the controller after pressing so only to be used when pairing and not running a script
-void TasController::pressA()
-{
-    emptyMsg();
-    state.buttons |= HidNpadButton_A;
-    setInputNextFrame();
-}
-
-//This also resets the state of the controller after pressing so only to be used when pairing and not running a script
 void TasController::pressLR()
 {
     emptyMsg();
