@@ -17,7 +17,7 @@ using namespace std;
 // Initialize frame counter variable
 int frameCount = 0;
 std::vector<TasController*> controllers;
- 
+
 extern "C"
 {
     // Sysmodules should not use applet*.
@@ -105,7 +105,7 @@ class file_exception : public std::exception
         return "File unopenable";
     }
 } f_ex;
- 
+
 void waitForVsync(Event *vsync_event) {
     Result rc = eventWait(vsync_event, UINT64_MAX);
     if(R_FAILED(rc))
@@ -121,15 +121,19 @@ int main(int argc, char* argv[])
     Result rc = viOpenDefaultDisplay(&disp);
     if(R_FAILED(rc))
         fatalThrow(rc);
- 
+
     rc = viGetDisplayVsyncEvent(&disp, &vsync_event);
     if(R_FAILED(rc))
         fatalThrow(rc);
 
     // Initialization code can go here.
     // Configure our supported input layout: all players with standard controller styles
-    padConfigureInput(8, HidNpadStyleSet_NpadStandard);
- 
+    padConfigureInput(8, HidNpadStyleTag_NpadFullKey);
+
+    // Initialize the gamepad for reading all controllers
+    PadState state;
+    padInitializeDefault(&state);
+    
     // Skyline handle
  
     auto msg = std::make_shared<controlMsg>();
@@ -151,11 +155,19 @@ int main(int argc, char* argv[])
     // Your code / main loop goes here.
     while(true)
     {
-        padUpdate(&pad);
+        // Scan the gamepad. This should be done once for each frame
+        padUpdate(&state);
 
-        //Defining/Declaring kHeld
-        u64 kHeld = padGetButtons(&pad);
-        u64 kDown = padGetButtonsDown(&pad);
+        // padGetButtonsDown returns the set of buttons that have been
+        // newly pressed in this frame compared to the previous one
+        u64 kDown = padGetButtonsDown(&state);
+
+        // padGetButtons returns the set of buttons that are currently pressed
+        u64 kHeld = padGetButtons(&state);
+
+        // padGetButtonsUp returns the set of buttons that have been
+        // newly released in this frame compared to the previous one
+        u64 kUp = padGetButtonsUp(&state);
  
         if((kHeld & HidNpadButton_ZL) && (kHeld & HidNpadButton_L) && (kHeld & HidNpadButton_Right) && (kDown & HidNpadButton_Y))
         {  
@@ -165,6 +177,7 @@ int main(int argc, char* argv[])
        
         if((kHeld & HidNpadButton_ZR) && (kHeld & HidNpadButton_R) && (kHeld & HidNpadButton_Right) && (kDown & HidNpadButton_X))
         {
+            controllers.empty() && controllers.back()->attachFlag;
             controllers.back()->detach();
             delete controllers.back();
             controllers.pop_back();
@@ -172,11 +185,14 @@ int main(int argc, char* argv[])
 
         if(!controllers.empty() && controllers.back()->attachFlag)
         {
-            msg->keys = padGetButtons(&pad);
-            msg->keys &= 65535;
- 
-            PadState state;
             padUpdate(&state);
+            
+            msg->keys = padGetButtons(&state);
+            msg->keys &= 65535;
+            
+            // Read the sticks' position
+            HidAnalogStickState analog_stick_l = padGetStickPos(&state, 0);
+            HidAnalogStickState analog_stick_r = padGetStickPos(&state, 1);
             msg->joy_l_x = state.sticks[0].x;
             msg->joy_l_y = state.sticks[0].y;
             msg->joy_r_x = state.sticks[1].x;
