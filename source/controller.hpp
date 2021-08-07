@@ -24,7 +24,7 @@ class TasController
 {
     private:
 
-    HiddbgHdlsHandle HdlsHandle = {0};
+    HiddbgHdlsHandle HdlsHandle= {0};
     HiddbgHdlsDeviceInfo device = {0};
     HiddbgHdlsState state = {0};
     static char controllerCount;
