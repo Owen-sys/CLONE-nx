@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
             controllers.back()->attach();
         }
        
-        if((kHeld & HidNpadButton_ZR) && (kHeld & HidNpadButton_R) && (kHeld & HidNpadButton_Up) && (kDown & HidNpadButton_X))
+        if((kHeld & HidNpadButton_ZR) && (kHeld & HidNpadButton_R) && (kHeld & HidNpadButton_Right) && (kDown & HidNpadButton_X))
         {
             controllers.back()->detach();
             delete controllers.back();
