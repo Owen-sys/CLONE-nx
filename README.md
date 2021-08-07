@@ -1,7 +1,7 @@
 # Clone-Nx-Remastered
 > A fork of [Hamhub7's Clone-nx](https://github.com/hamhub7/CLONE-nx) With the purpose of updating its state.
 
-Clone-nx copys the inputs of your (P1) controller.
+Clone-nx copys the inputs of your (P1 or Handheld) controller.
 
 ## Support the Creators
 Join our [Discord server](http://discord.gg/qeamCcV)  
@@ -21,13 +21,13 @@ New features are already planned, such as:
 First of all, you need to have an [Atmosphere-injected Switch](https://switch.homebrew.guide/).
 
 ### Installation
-1. Acquire `nx-TAS.nsp` either from the latest release, or more preferrably build yourself via the instructions below
-2. Create the relevant title directory on your Switch's SD card at `sdmc:/atmosphere/titles/0100000000000cab/` (`sdmc:/atmosphere/contents/0100000000000cab` on Atmosphere versions 0.10.0 or newer)
+1. Acquire `Clone-NX.nsp` either from the latest release, or more preferrably build yourself via the instructions below
+2. Create the relevant title directory on your Switch's SD card at `sdmc:/atmosphere/titles/0100000000000cab/` (`sdmc:/atmosphere/contents/0100000000000cab` on Atmosphere versions 0.10.0 or newer if using tas-script use 0100000000000dab for clone-nx instead.)
 3. Place the NSP as `sdmc:/atmosphere/titles/0100000000000cab/exefs.nsp` (`sdmc:/atmosphere/contents/0100000000000cab/exefs.nsp` on Atmosphere versions 0.10.0 or newer)
 4. Create an empty file at `sdmc:/atmosphere/titles/0100000000000cab/flags/boot2.flag` (`sdmc:/atmosphere/contents/0100000000000cab//flags/boot2.flag` on Atmosphere versions 0.10.0 or newer)
 5. Reboot into CFW
 
-### Keybinds
+### Keybinds (Currently Removed Will be added back very soon)
 You need to have a USB keyboard attached to your Switch, either via the dock or a USB-A to USB-C adapter in the charging port.
 
 #### Controllers
@@ -56,12 +56,12 @@ You need to have a USB keyboard attached to your Switch, either via the dock or 
 ## Building from Source
 1. [Set up the required libraries](https://switchbrew.org/wiki/Setting_up_Development_Environment)
 2. In the newly installed MSYS2, navigate to the folder you'd like to build this project in, either by opening MSYS in that directory or using the `cd` command to navigate
-3. `git clone https://github.com/hamhub7/nx-TAS.git`
-4. `cd nx-TAS`
+3. `git clone https://github.com/hamhub7/Clone-NX.git`
+4. `cd Clone-NX`
 5. `make`
-6. You should see a file called `nx-TAS.nsp`
+6. You should see a file called `Clone-nx.nsp`
 
 The `make` process will fail for one of three reasons:
 - You cloned a commit that doesn't compile (unlikely)
-- Your folder is named something other than `nx-TAS`; solution is to `ln -s nx-TAS.json config.json`
+- Your folder is named something other than `Clone-nx`; solution is to `ln -s Clone-Nx.json config.json`
 - Your directory's full path has spaces in it (usually your account name)
