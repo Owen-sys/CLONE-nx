@@ -1,5 +1,5 @@
 # Clone-Nx-Remastered
-> A fork of [Hamhub7's Clone-nx](https://github.com/hamhub7/CLONE-nx) With the purpose of updating its state.
+> A fork of [Hamhub7's Clone-nx](https://github.com/hamhub7/CLONE-nx) With the purpose of updating its state to make it compatible with newer firmwares.
 
 Clone-nx copys the inputs of your (P1 or Handheld) controller.
 
@@ -56,8 +56,8 @@ You need to have a USB keyboard attached to your Switch, either via the dock or 
 ## Building from Source
 1. [Set up the required libraries](https://switchbrew.org/wiki/Setting_up_Development_Environment)
 2. In the newly installed MSYS2, navigate to the folder you'd like to build this project in, either by opening MSYS in that directory or using the `cd` command to navigate
-3. `git clone https://github.com/hamhub7/Clone-NX.git`
-4. `cd Clone-NX`
+3. `git clone https://github.com/Owen-sys/CLONE-nx.git`
+4. `cd CLONE-NX`
 5. `make`
 6. You should see a file called `Clone-nx.nsp`
 
